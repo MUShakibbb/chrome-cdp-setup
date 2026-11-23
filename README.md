@@ -119,6 +119,13 @@ Rename-Item "$root\Profile 1" "Profile 1.disabled"
 
 Always back up `Local State` and `Default\Preferences` before editing them.
 
+### Restored tabs are not extra browsers
+
+If Chrome offers to restore your previous session — or you click the profile and it reopens old tabs —
+those tabs live inside the **same** browser process. They show up as CDP targets, not as a second
+instance, and the debug port is unaffected. The prompt appears because the profile was force-quit
+during setup; set `chrome://settings/onStartup` to *Open the New Tab page* to stop it recurring.
+
 ---
 
 ## Connecting
@@ -160,6 +167,7 @@ No port forwarding needed. If a client fails from WSL but works from Windows, it
 3. **Never cache the browser UUID.** It is regenerated every launch.
 4. **Never clone or junction a live profile.** It destroys the session.
 5. **Verify with a real handshake**, not just `/json/version` — HTTP 200 does not mean the WebSocket works.
+6. **Launch on one line.** PowerShell has no implicit line continuation; a wrapped command silently drops the trailing flags (see `docs/DIAGNOSTICS.md` §0).
 
 ---
 

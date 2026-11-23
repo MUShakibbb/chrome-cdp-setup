@@ -2,6 +2,34 @@
 
 Copy-paste checks, in the order that isolates the problem fastest.
 
+## 0. Did the command actually run as one line?
+
+This is the most common failure, and it looks like a flag problem when it isn't.
+
+```
+PS> & "C:\...\chrome.exe" --remote-debugging-port=9222 --remote-allow-origins=*
+PS>     --user-data-dir="$env:LOCALAPPDATA\ChromeDebugProfile"
+Missing expression after unary operator '--'.
+```
+
+PowerShell has **no implicit line continuation**. The second line was parsed as a new statement,
+and a line starting with `--` is read as the unary decrement operator. Chrome therefore started
+with only the first two flags — no `--user-data-dir` — so it used the default profile, where
+DevTools is blocked, and nothing listened on the port.
+
+Symptoms downstream: `Invoke-RestMethod : Unable to connect to the remote server`, or a port that
+binds but 404s everything.
+
+Use a single line, or a form where each line is a complete statement:
+
+```powershell
+$chrome = "C:\Program Files\Google\Chrome\Application\chrome.exe"
+$cargs  = "--remote-debugging-port=9222", "--remote-allow-origins=*", "--user-data-dir=$env:LOCALAPPDATA\ChromeDebugProfile"
+& $chrome $cargs
+```
+
+Backtick continuation works but is fragile — a trailing space after the backtick breaks it silently.
+
 ## 1. Is Chrome listening, and on how many addresses?
 
 ```powershell
